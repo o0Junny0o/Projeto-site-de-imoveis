@@ -10,11 +10,12 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema lar
 -- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `lar` ;
 
 -- -----------------------------------------------------
 -- Schema lar
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `lar` DEFAULT CHARACTER SET utf8mb3 ;
+CREATE SCHEMA IF NOT EXISTS `lar` DEFAULT CHARACTER SET utf8mb4 ;
 USE `lar` ;
 
 -- -----------------------------------------------------
@@ -39,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`caracteristica` (
   `jardimInverno` VARCHAR(3) NULL DEFAULT NULL,
   PRIMARY KEY (`idCaracteristica`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -53,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`cliente` (
   `dataNascimento` DATE NULL DEFAULT NULL,
   PRIMARY KEY (`idCliente`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`contratoaluguel` (
     FOREIGN KEY (`Cliente_idCliente`)
     REFERENCES `lar`.`cliente` (`idCliente`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -87,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`contratovenda` (
     FOREIGN KEY (`Cliente_idCliente`)
     REFERENCES `lar`.`cliente` (`idCliente`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -108,7 +109,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`preferenciacondominio` (
   `brinquedoteca` VARCHAR(3) NULL DEFAULT NULL,
   `playground` VARCHAR(3) NULL DEFAULT NULL,
   `praca` VARCHAR(3) NULL DEFAULT NULL,
-  `redeBalanco` VARCHAR(3) NULL DEFAULT NULL,
+  `redeBalancoCON` VARCHAR(3) NULL DEFAULT NULL,
   `academia` VARCHAR(3) NULL DEFAULT NULL,
   `spa` VARCHAR(3) NULL DEFAULT NULL,
   `sauna` VARCHAR(3) NULL DEFAULT NULL,
@@ -117,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`preferenciacondominio` (
   `vigia` VARCHAR(3) NULL DEFAULT NULL,
   PRIMARY KEY (`idPreferenciaCondominio`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -128,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`proprietario` (
   `nomeProp` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`idProprietario`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -141,7 +142,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`regiao` (
   `nomeRegiao` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`idRegiao`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -172,7 +173,7 @@ CREATE TABLE IF NOT EXISTS `lar`.`preferenciaimovel` (
   `escritorioMobiliado` VARCHAR(3) NULL DEFAULT NULL,
   PRIMARY KEY (`idPreferenciaImovel`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -182,25 +183,22 @@ CREATE TABLE IF NOT EXISTS `lar`.`imovelaluguel` (
   `idImoveis` INT NOT NULL AUTO_INCREMENT,
   `tipoImovelAluguel` VARCHAR(255) NULL DEFAULT NULL,
   `precoImovelAluguel` FLOAT NULL DEFAULT NULL,
-  `ContratoAluguel_idContratoAluguel` INT NOT NULL,
   `Regiao_idRegiao` INT NOT NULL,
   `Proprietario_idProprietario` INT NOT NULL,
   `PreferenciaCondominio_idPreferenciaCondominio` INT NOT NULL,
   `Caracteristica_idCaracteristica` INT NOT NULL,
   `preferenciaimovel_idPreferenciaImovel` INT NOT NULL,
-  PRIMARY KEY (`idImoveis`, `ContratoAluguel_idContratoAluguel`, `Regiao_idRegiao`, `PreferenciaCondominio_idPreferenciaCondominio`, `Caracteristica_idCaracteristica`, `preferenciaimovel_idPreferenciaImovel`),
-  INDEX `fk_ImovelAluguel_ContratoAluguel1_idx` (`ContratoAluguel_idContratoAluguel` ASC) VISIBLE,
+  `contratoaluguel_idContratoAluguel` INT NULL,
+  PRIMARY KEY (`idImoveis`, `Regiao_idRegiao`, `PreferenciaCondominio_idPreferenciaCondominio`, `Caracteristica_idCaracteristica`, `preferenciaimovel_idPreferenciaImovel`),
   INDEX `fk_ImovelAluguel_Regiao1_idx` (`Regiao_idRegiao` ASC) VISIBLE,
   INDEX `fk_ImovelAluguel_Proprietario1_idx` (`Proprietario_idProprietario` ASC) VISIBLE,
   INDEX `fk_ImovelAluguel_PreferenciaCondominio1_idx` (`PreferenciaCondominio_idPreferenciaCondominio` ASC) VISIBLE,
   INDEX `fk_ImovelAluguel_Caracteristica1_idx` (`Caracteristica_idCaracteristica` ASC) VISIBLE,
   INDEX `fk_imovelaluguel_preferenciaimovel1_idx` (`preferenciaimovel_idPreferenciaImovel` ASC) VISIBLE,
+  INDEX `fk_imovelaluguel_contratoaluguel1_idx` (`contratoaluguel_idContratoAluguel` ASC) VISIBLE,
   CONSTRAINT `fk_ImovelAluguel_Caracteristica1`
     FOREIGN KEY (`Caracteristica_idCaracteristica`)
     REFERENCES `lar`.`caracteristica` (`idCaracteristica`),
-  CONSTRAINT `fk_ImovelAluguel_ContratoAluguel1`
-    FOREIGN KEY (`ContratoAluguel_idContratoAluguel`)
-    REFERENCES `lar`.`contratoaluguel` (`idContratoAluguel`),
   CONSTRAINT `fk_ImovelAluguel_PreferenciaCondominio1`
     FOREIGN KEY (`PreferenciaCondominio_idPreferenciaCondominio`)
     REFERENCES `lar`.`preferenciacondominio` (`idPreferenciaCondominio`),
@@ -214,9 +212,14 @@ CREATE TABLE IF NOT EXISTS `lar`.`imovelaluguel` (
     FOREIGN KEY (`preferenciaimovel_idPreferenciaImovel`)
     REFERENCES `lar`.`preferenciaimovel` (`idPreferenciaImovel`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_imovelaluguel_contratoaluguel1`
+    FOREIGN KEY (`contratoaluguel_idContratoAluguel`)
+    REFERENCES `lar`.`contratoaluguel` (`idContratoAluguel`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -226,25 +229,22 @@ CREATE TABLE IF NOT EXISTS `lar`.`imovelvenda` (
   `idImovelVenda` INT NOT NULL AUTO_INCREMENT,
   `tipoImovelVenda` VARCHAR(255) NULL DEFAULT NULL,
   `precoImovelVenda` FLOAT NULL DEFAULT NULL,
-  `ContratoVenda_idContratoVenda` INT NOT NULL,
   `Regiao_idRegiao` INT NOT NULL,
   `Proprietario_idProprietario` INT NOT NULL,
   `PreferenciaCondominio_idPreferenciaCondominio` INT NOT NULL,
   `Caracteristica_idCaracteristica` INT NOT NULL,
   `preferenciaimovel_idPreferenciaImovel` INT NOT NULL,
-  PRIMARY KEY (`idImovelVenda`, `ContratoVenda_idContratoVenda`, `Regiao_idRegiao`, `PreferenciaCondominio_idPreferenciaCondominio`, `Caracteristica_idCaracteristica`, `preferenciaimovel_idPreferenciaImovel`),
-  INDEX `fk_ImovelVenda_ContratoVenda1_idx` (`ContratoVenda_idContratoVenda` ASC) VISIBLE,
+  `contratovenda_idContratoVenda` INT NULL,
+  PRIMARY KEY (`idImovelVenda`, `Regiao_idRegiao`, `PreferenciaCondominio_idPreferenciaCondominio`, `Caracteristica_idCaracteristica`, `preferenciaimovel_idPreferenciaImovel`),
   INDEX `fk_ImovelVenda_Regiao1_idx` (`Regiao_idRegiao` ASC) VISIBLE,
   INDEX `fk_ImovelVenda_Proprietario1_idx` (`Proprietario_idProprietario` ASC) VISIBLE,
   INDEX `fk_ImovelVenda_PreferenciaCondominio1_idx` (`PreferenciaCondominio_idPreferenciaCondominio` ASC) VISIBLE,
   INDEX `fk_ImovelVenda_Caracteristica1_idx` (`Caracteristica_idCaracteristica` ASC) VISIBLE,
   INDEX `fk_imovelvenda_preferenciaimovel1_idx` (`preferenciaimovel_idPreferenciaImovel` ASC) VISIBLE,
+  INDEX `fk_imovelvenda_contratovenda1_idx` (`contratovenda_idContratoVenda` ASC) VISIBLE,
   CONSTRAINT `fk_ImovelVenda_Caracteristica1`
     FOREIGN KEY (`Caracteristica_idCaracteristica`)
     REFERENCES `lar`.`caracteristica` (`idCaracteristica`),
-  CONSTRAINT `fk_ImovelVenda_ContratoVenda1`
-    FOREIGN KEY (`ContratoVenda_idContratoVenda`)
-    REFERENCES `lar`.`contratovenda` (`idContratoVenda`),
   CONSTRAINT `fk_ImovelVenda_PreferenciaCondominio1`
     FOREIGN KEY (`PreferenciaCondominio_idPreferenciaCondominio`)
     REFERENCES `lar`.`preferenciacondominio` (`idPreferenciaCondominio`),
@@ -258,9 +258,14 @@ CREATE TABLE IF NOT EXISTS `lar`.`imovelvenda` (
     FOREIGN KEY (`preferenciaimovel_idPreferenciaImovel`)
     REFERENCES `lar`.`preferenciaimovel` (`idPreferenciaImovel`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_imovelvenda_contratovenda1`
+    FOREIGN KEY (`contratovenda_idContratoVenda`)
+    REFERENCES `lar`.`contratovenda` (`idContratoVenda`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -272,22 +277,24 @@ CREATE TABLE IF NOT EXISTS `lar`.`quarto` (
   `preco` FLOAT NULL DEFAULT NULL,
   `Proprietario_idProprietario` INT NOT NULL,
   `Regiao_idRegiao` INT NOT NULL,
-  `ContratoAluguel_idContratoAluguel` INT NOT NULL,
-  PRIMARY KEY (`idQuarto`, `Regiao_idRegiao`, `ContratoAluguel_idContratoAluguel`),
+  `contratoaluguel_idContratoAluguel` INT NULL,
+  PRIMARY KEY (`idQuarto`, `Regiao_idRegiao`),
   INDEX `fk_Quarto_Proprietario1_idx` (`Proprietario_idProprietario` ASC) VISIBLE,
   INDEX `fk_Quarto_Regiao1_idx` (`Regiao_idRegiao` ASC) VISIBLE,
-  INDEX `fk_Quarto_ContratoAluguel1_idx` (`ContratoAluguel_idContratoAluguel` ASC) VISIBLE,
-  CONSTRAINT `fk_Quarto_ContratoAluguel1`
-    FOREIGN KEY (`ContratoAluguel_idContratoAluguel`)
-    REFERENCES `lar`.`contratoaluguel` (`idContratoAluguel`),
+  INDEX `fk_quarto_contratoaluguel1_idx` (`contratoaluguel_idContratoAluguel` ASC) VISIBLE,
   CONSTRAINT `fk_Quarto_Proprietario1`
     FOREIGN KEY (`Proprietario_idProprietario`)
     REFERENCES `lar`.`proprietario` (`idProprietario`),
   CONSTRAINT `fk_Quarto_Regiao1`
     FOREIGN KEY (`Regiao_idRegiao`)
-    REFERENCES `lar`.`regiao` (`idRegiao`))
+    REFERENCES `lar`.`regiao` (`idRegiao`),
+  CONSTRAINT `fk_quarto_contratoaluguel1`
+    FOREIGN KEY (`contratoaluguel_idContratoAluguel`)
+    REFERENCES `lar`.`contratoaluguel` (`idContratoAluguel`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
